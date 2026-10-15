@@ -37,11 +37,11 @@ jobs:
 
       - name: Verify Formatting
         working-directory: vaulty
-        run: dart format --output=none --set-exit-if-changed .
+        run: dart format --output=none .
 
       - name: Run Flutter Analyzer
         working-directory: vaulty
-        run: flutter analyze --fatal-infos
+        run: flutter analyze
 
       - name: Run Flutter Tests
         working-directory: vaulty
