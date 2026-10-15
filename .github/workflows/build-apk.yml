@@ -11,7 +11,7 @@ on:
       create_release:
         description: 'Publish as a GitHub Release (requires tag or release notes)'
         required: false
-        default: false
+        default: true
         type: boolean
 
 concurrency:
@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build Android APK
+    name: Build Android APK & Publish Release
     runs-on: ubuntu-latest
 
     permissions:
@@ -65,34 +65,128 @@ jobs:
         working-directory: vaulty
         run: flutter build apk --release
 
-      - name: Prepare Artifacts & Calculate Checksum
+      - name: Prepare Artifacts & Calculate Checksums
         run: |
           mkdir -p dist
+          # Copy compiled Release APK
           cp vaulty/build/app/outputs/flutter-apk/app-release.apk dist/Vaulty-release.apk
+
+          # Package pristine source code archives directly from commit
+          git archive --format=zip HEAD -o dist/Vaulty-source.zip
+          git archive --format=tar.gz HEAD -o dist/Vaulty-source.tar.gz
+
+          # Calculate SHA256 checksums
           cd dist
           sha256sum Vaulty-release.apk > Vaulty-release.apk.sha256
-          echo "SHA256 Checksum:"
-          cat Vaulty-release.apk.sha256
+          sha256sum Vaulty-source.zip > Vaulty-source.zip.sha256
+          sha256sum Vaulty-source.tar.gz > Vaulty-source.tar.gz.sha256
+          cd ..
 
-      - name: Upload Downloadable APK Artifact
+          echo "Generated SHA256 Checksums:"
+          cat dist/Vaulty-release.apk.sha256
+          cat dist/Vaulty-source.zip.sha256
+          cat dist/Vaulty-source.tar.gz.sha256
+
+      - name: Upload Downloadable Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Vaulty-Release-APK
+          name: Vaulty-Release-Package
           path: |
             dist/Vaulty-release.apk
             dist/Vaulty-release.apk.sha256
+            dist/Vaulty-source.zip
+            dist/Vaulty-source.zip.sha256
+            dist/Vaulty-source.tar.gz
+            dist/Vaulty-source.tar.gz.sha256
           retention-days: 30
 
-      - name: Create GitHub Release (On Tag or Manual Release)
-        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+      - name: Generate Release Notes & Git Tag
+        if: github.event_name != 'pull_request'
+        run: |
+          VERSION=$(grep 'version:' vaulty/pubspec.yaml | head -n1 | awk '{print $2}' | cut -d'+' -f1)
+          COMMIT_HASH="${{ github.sha }}"
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          COMMIT_BODY=$(git log -1 --pretty=format:"%b")
+          AUTHOR_NAME=$(git log -1 --pretty=format:"%an")
+          AUTHOR_EMAIL=$(git log -1 --pretty=format:"%ae")
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+            RELEASE_TITLE="Vaulty ${RELEASE_TAG}"
+          else
+            RELEASE_TAG="v${VERSION}-build.${{ github.run_number }}"
+            RELEASE_TITLE="Vaulty v${VERSION} (Build #${{ github.run_number }})"
+          fi
+
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
+          echo "RELEASE_TITLE=${RELEASE_TITLE}" >> $GITHUB_ENV
+
+          # Configure git identity and push tag to origin
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+            git tag -a "${RELEASE_TAG}" -m "${RELEASE_TITLE}"
+            git push origin "${RELEASE_TAG}" || echo "Tag already exists on remote"
+          fi
+
+          # Construct rich release notes
+          cat << EOF > dist/RELEASE_NOTES.md
+          ## 📦 Vaulty Production Release (${RELEASE_TAG})
+
+          **Release Date**: ${DATE}  
+          **Commit**: [\`${SHORT_SHA}\`](https://github.com/${{ github.repository }}/commit/${COMMIT_HASH})  
+          **Author**: ${AUTHOR_NAME} (\`${AUTHOR_EMAIL}\`)
+
+          ---
+
+          ### 📝 Commit Details
+          > **${COMMIT_MSG}**
+
+          $(if [ -n "$COMMIT_BODY" ]; then echo -e "\n\`\`\`\n${COMMIT_BODY}\n\`\`\`\n"; fi)
+
+          ---
+
+          ### 🚀 What's Included
+          - **Android APK**: Standalone production release APK ready for installation on physical Android devices.
+          - **Full Source Code**: Clean packaged archives (\`.zip\` and \`.tar.gz\`) directly captured from this commit.
+          - **Decentralized Storage**: Direct Google OAuth 2.0 & Drive v3 AppData folder storage (no third-party servers).
+          - **Persistent Authentication**: Seamless Google OAuth session restoration across device restarts.
+          - **Hardware-Backed Encryption**: Android KeyStore-backed AES-256-GCM authenticated encryption.
+          - **Google Pixel UI**: Material 3 dynamic styling, spring physics, and haptics.
+          - **Multi-Lingual Engine**: Formal Hindi (हिंदी) and English (en) localization.
+
+          ---
+
+          ### 🔒 Integrity & SHA-256 Checksums
+          | Asset | SHA-256 Checksum |
+          |---|---|
+          | \`Vaulty-release.apk\` | \`$(awk '{print $1}' dist/Vaulty-release.apk.sha256)\` |
+          | \`Vaulty-source.zip\` | \`$(awk '{print $1}' dist/Vaulty-source.zip.sha256)\` |
+          | \`Vaulty-source.tar.gz\` | \`$(awk '{print $1}' dist/Vaulty-source.tar.gz.sha256)\` |
+
+          EOF
+
+          echo "Generated RELEASE_NOTES.md:"
+          cat dist/RELEASE_NOTES.md
+
+      - name: Publish GitHub Release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TITLE }}
+          body_path: dist/RELEASE_NOTES.md
           files: |
             dist/Vaulty-release.apk
             dist/Vaulty-release.apk.sha256
+            dist/Vaulty-source.zip
+            dist/Vaulty-source.zip.sha256
+            dist/Vaulty-source.tar.gz
+            dist/Vaulty-source.tar.gz.sha256
           generate_release_notes: true
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
