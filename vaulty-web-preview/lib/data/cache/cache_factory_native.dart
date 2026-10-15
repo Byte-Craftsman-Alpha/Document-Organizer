@@ -138,19 +138,28 @@ class EncryptedVaultCache extends VaultCache {
   });
   @override
   Future<Map<String, dynamic>?> lastAccount() async {
-    final s = await _secure.read(key: 'vaulty.last.account');
-    return s == null ? null : jsonDecode(s) as Map<String, dynamic>;
+    try {
+      final s = await _secure
+          .read(key: 'vaulty.last.account')
+          .timeout(const Duration(seconds: 2));
+      return s == null ? null : jsonDecode(s) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<void> rememberAccount(Map<String, dynamic>? account) async {
-    if (account == null) {
-      await _secure.delete(key: 'vaulty.last.account');
-    } else {
-      await _secure.write(
-        key: 'vaulty.last.account',
-        value: jsonEncode(account),
-      );
-    }
+    try {
+      if (account == null) {
+        await _secure
+            .delete(key: 'vaulty.last.account')
+            .timeout(const Duration(seconds: 2));
+      } else {
+        await _secure
+            .write(key: 'vaulty.last.account', value: jsonEncode(account))
+            .timeout(const Duration(seconds: 2));
+      }
+    } catch (_) {}
   }
 }

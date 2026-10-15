@@ -43,10 +43,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.watch(vaultIdentityProvider);
   final refresh = ValueNotifier(0);
   ref.listen(sessionProvider, (_, _) => refresh.value++);
+  final initialLoggedIn = ref.read(sessionProvider).valueOrNull != null;
   final router = GoRouter(
     initialLocation: const bool.fromEnvironment('SHOW_GALLERY') && kDebugMode
         ? '/gallery'
-        : '/login',
+        : (initialLoggedIn ? '/home' : '/login'),
     refreshListenable: refresh,
     redirect: (context, state) {
       if (state.uri.path == '/gallery' && kDebugMode) return null;

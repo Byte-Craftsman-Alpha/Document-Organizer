@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:archive/archive.dart';
@@ -26,7 +27,11 @@ import 'drive_api.dart';
 
 class GoogleAuthRepository
     implements LiveAuthRepository, OfflineAuthRepository {
-  GoogleAuthRepository(this.google, this.store, this.device);
+  GoogleAuthRepository(this.google, this.store, this.device) {
+    google.onAccountAuthorized = (account) {
+      unawaited(store.cache.rememberAccount(account).catchError((Object _) {}));
+    };
+  }
   final GoogleIdentity google;
   final DriveStore store;
   final DeviceServices device;
@@ -37,12 +42,40 @@ class GoogleAuthRepository
   @override
   String? get configurationError => google.configurationError;
   @override
-  Future<void> initialize() => google.initialize();
+  Future<void> initialize() async {
+    if (configurationError != null) {
+      return;
+    }
+    try {
+      final saved = await store.cache.lastAccount().timeout(
+        const Duration(seconds: 2),
+      );
+      if (saved != null && saved['email'] != null) {
+        google.restoreSession(saved);
+      }
+      await google.initialize(skipLightweightAuth: saved != null);
+    } catch (_) {
+      await google.initialize();
+    }
+  }
+
   @override
   Future<String?> currentUser() async =>
       connection.driveReady ? connection.name ?? connection.email : null;
   @override
-  Future<String> signIn() => google.authorize();
+  Future<String> signIn() async {
+    final result = await google.authorize();
+    final current = google.connection;
+    if (current.driveReady && current.email != null) {
+      await store.cache.rememberAccount({
+        'id': current.id ?? google.owner,
+        'name': current.name,
+        'email': current.email,
+      });
+    }
+    return result;
+  }
+
   @override
   Future<void> openOffline() async {
     final saved = await store.cache.lastAccount();
