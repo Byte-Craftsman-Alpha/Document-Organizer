@@ -38,23 +38,32 @@ android {
         versionName = flutter.versionName
     }
 
-    // Dedicated development identity for the Google OAuth Android client.
-    // This is NOT a production signing key. Keep it out of version control.
     signingConfigs {
-        if (file("dev-signing/vaulty-debug.keystore").exists()) getByName("debug") {
-            storeFile = file("dev-signing/vaulty-debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+        create("release") {
+            if (productionSigningFile.exists()) {
+                storeFile = rootProject.file(productionSigning.getProperty("storeFile"))
+                storePassword = productionSigning.getProperty("storePassword")
+                keyAlias = productionSigning.getProperty("keyAlias")
+                keyPassword = productionSigning.getProperty("keyPassword")
+            } else if (file("dev-signing/vaulty-debug.keystore").exists()) {
+                storeFile = file("dev-signing/vaulty-debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+            enableV1Signing = true
+            enableV2Signing = true
         }
-    }
 
-    signingConfigs {
-        if (productionSigningFile.exists()) create("production") {
-            storeFile = rootProject.file(productionSigning.getProperty("storeFile"))
-            storePassword = productionSigning.getProperty("storePassword")
-            keyAlias = productionSigning.getProperty("keyAlias")
-            keyPassword = productionSigning.getProperty("keyPassword")
+        getByName("debug") {
+            if (file("dev-signing/vaulty-debug.keystore").exists()) {
+                storeFile = file("dev-signing/vaulty-debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 
@@ -62,9 +71,7 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName(if (productionSigningFile.exists()) "production" else "debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

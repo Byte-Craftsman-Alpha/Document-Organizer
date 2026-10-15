@@ -68,6 +68,7 @@ app.*.map.json
 **/*.key
 **/*.p12
 **/key.properties
+!**/vaulty-debug.keystore
 client_secret*.json
 **/credentials/
 /config/google.json
