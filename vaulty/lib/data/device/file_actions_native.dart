@@ -33,10 +33,14 @@ Future<void> openDocumentBytes(
 }
 
 Future<void> clearOpenedFiles() async {
-  final root = await getTemporaryDirectory();
-  for (final name in ['vaulty-open', 'share_plus']) {
-    final dir = Directory('${root.path}/$name');
-    if (await dir.exists()) await dir.delete(recursive: true);
+  try {
+    final root = await getTemporaryDirectory();
+    for (final name in ['vaulty-open', 'share_plus']) {
+      final dir = Directory('${root.path}/$name');
+      if (await dir.exists()) await dir.delete(recursive: true);
+    }
+  } catch (_) {
+    /* Best effort cleanup; never break sign-out. */
   }
 }
 
