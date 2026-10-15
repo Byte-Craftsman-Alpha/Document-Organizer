@@ -138,3 +138,4 @@ Vaulty features an in-house, zero-dependency localization engine (`AppStrings` &
   - `Due in {n} days` -> `{n} दिनों में देय`
 - **Zero-Translation User Data Guard**:
   User-entered content (document titles, custom tags, owner names, Google email addresses) is detected and passed through verbatim without alteration, preserving original identities and document integrity.
+

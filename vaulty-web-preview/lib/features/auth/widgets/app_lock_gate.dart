@@ -146,7 +146,10 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
                 children: [
                   const Icon(Icons.lock_outline, size: Metrics.logo),
                   const SizedBox(height: Space.lg),
-                  AppText('Your vault is locked', style: context.type.titleLarge),
+                  AppText(
+                    'Your vault is locked',
+                    style: context.type.titleLarge,
+                  ),
                   const SizedBox(height: Space.lg),
                   AppButton(
                     label: 'Unlock Vaulty',

@@ -20,9 +20,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
   unawaited(pruneOpenedFiles().catchError((Object _) {}));
-  final ui=await UiPreferencesController.load();
+  final ui = await UiPreferencesController.load();
   runApp(
-    ProviderScope(overrides: [...await liveOverrides(), uiPreferencesProvider.overrideWith((ref)=>ui)], child: const VaultyApp()),
+    ProviderScope(
+      overrides: [
+        ...await liveOverrides(),
+        uiPreferencesProvider.overrideWith((ref) => ui),
+      ],
+      child: const VaultyApp(),
+    ),
   );
 }
 
@@ -31,16 +37,18 @@ class VaultyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) => MaterialApp.router(
     title: 'Vaulty',
-    locale:ref.watch(localeProvider),
-    supportedLocales:const [Locale('en'),Locale('hi')],
-    localizationsDelegates:GlobalMaterialLocalizations.delegates,
+    locale: ref.watch(localeProvider),
+    supportedLocales: const [Locale('en'), Locale('hi')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     builder: (context, child) {
-      final language=Localizations.localeOf(context).languageCode;
-      if(AppStrings.language!=language) {
-        AppStrings.language=language;
-        unawaited(RenewalBridge.instance.language(language).catchError((Object _) {}));
+      final language = Localizations.localeOf(context).languageCode;
+      if (AppStrings.language != language) {
+        AppStrings.language = language;
+        unawaited(
+          RenewalBridge.instance.language(language).catchError((Object _) {}),
+        );
       }
-      return OnboardingGate(child:AppLockGate(child: child!));
+      return OnboardingGate(child: AppLockGate(child: child!));
     },
     debugShowCheckedModeBanner: false,
     theme: AppTheme.light,

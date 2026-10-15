@@ -53,3 +53,4 @@ Please follow responsible disclosure by emailing the lead maintainer directly:
 - **Initial Acknowledgment**: Within 48 hours of receipt.
 - **Triage & Assessment**: Within 5 business days.
 - **Fix & Public Advisory**: Coordinated release schedule with credit provided to the researcher.
+

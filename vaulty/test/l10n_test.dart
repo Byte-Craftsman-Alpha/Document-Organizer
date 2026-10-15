@@ -21,9 +21,18 @@ void main() {
       expect(AppStrings.translate('Documents', 'hi'), 'दस्तावेज़');
       expect(AppStrings.translate('Upload', 'hi'), 'अपलोड');
       expect(AppStrings.translate('Settings', 'hi'), 'सेटिंग्स');
-      expect(AppStrings.translate('Review imports', 'hi'), 'आयात की समीक्षा करें');
-      expect(AppStrings.translate('Import selected files', 'hi'), 'चयनित फ़ाइलें आयात करें');
-      expect(AppStrings.translate('No pending files', 'hi'), 'कोई लंबित फ़ाइल नहीं है');
+      expect(
+        AppStrings.translate('Review imports', 'hi'),
+        'आयात की समीक्षा करें',
+      );
+      expect(
+        AppStrings.translate('Import selected files', 'hi'),
+        'चयनित फ़ाइलें आयात करें',
+      );
+      expect(
+        AppStrings.translate('No pending files', 'hi'),
+        'कोई लंबित फ़ाइल नहीं है',
+      );
     });
 
     test('Pattern translations replace dynamic parameters correctly', () {
@@ -42,4 +51,3 @@ void main() {
     });
   });
 }
-

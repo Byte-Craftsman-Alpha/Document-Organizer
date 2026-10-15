@@ -158,7 +158,9 @@ class _AdvancedSearchSheetState extends ConsumerState<AdvancedSearchSheet> {
         const SizedBox(height: Space.md),
         DropdownButtonFormField<bool>(
           initialValue: renewal,
-          decoration: InputDecoration(labelText: context.tr('Renewal required')),
+          decoration: InputDecoration(
+            labelText: context.tr('Renewal required'),
+          ),
           items: const [
             DropdownMenuItem(value: null, child: AppText('Either')),
             DropdownMenuItem(value: true, child: AppText('Yes')),
@@ -215,7 +217,8 @@ class _AdvancedSearchSheetState extends ConsumerState<AdvancedSearchSheet> {
           decoration: InputDecoration(labelText: context.tr('Sort results')),
           items: DocumentSort.values
               .map(
-                (s) => DropdownMenuItem(value: s, child: AppText('By ${s.name}')),
+                (s) =>
+                    DropdownMenuItem(value: s, child: AppText('By ${s.name}')),
               )
               .toList(),
           onChanged: (v) => setState(() => sort = v!),

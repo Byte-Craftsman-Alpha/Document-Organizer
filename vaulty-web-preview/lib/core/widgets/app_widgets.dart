@@ -32,7 +32,9 @@ class _AppPressState extends State<AppPress> {
           : 1.0,
       duration: Motion.of(
         context,
-        pressed ? const Duration(milliseconds: 90) : const Duration(milliseconds: 240),
+        pressed
+            ? const Duration(milliseconds: 90)
+            : const Duration(milliseconds: 240),
       ),
       curve: pressed ? Curves.easeOutCubic : Curves.easeOutBack,
       child: widget.child,
@@ -166,7 +168,12 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TextFormField(
     controller: controller,
-    validator: validator == null ? null : (v) { final error=validator!(v); return error == null ? null : context.tr(error); },
+    validator: validator == null
+        ? null
+        : (v) {
+            final error = validator!(v);
+            return error == null ? null : context.tr(error);
+          },
     onChanged: onChanged,
     onFieldSubmitted: onSubmitted,
     readOnly: readOnly,
@@ -264,7 +271,11 @@ class EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: Space.xs),
-          AppText(message, style: context.mutedBody, textAlign: TextAlign.center),
+          AppText(
+            message,
+            style: context.mutedBody,
+            textAlign: TextAlign.center,
+          ),
           if (action != null) ...[const SizedBox(height: Space.md), action!],
         ],
       ),
@@ -682,8 +693,9 @@ class _HoldToConfirmState extends State<HoldToConfirm>
                       child: LinearProgressIndicator(
                         value: controller.value,
                         minHeight: 3,
-                        backgroundColor:
-                            context.colors.error.withValues(alpha: 0.2),
+                        backgroundColor: context.colors.error.withValues(
+                          alpha: 0.2,
+                        ),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           context.colors.error,
                         ),

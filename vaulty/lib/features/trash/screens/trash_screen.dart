@@ -46,10 +46,7 @@ class TrashScreen extends ConsumerWidget {
                           children: [
                             Text(d.title, style: context.type.titleMedium),
                             const SizedBox(height: Space.xs),
-                            AppText(
-                              d.belongsTo,
-                              style: context.mutedCaption,
-                            ),
+                            AppText(d.belongsTo, style: context.mutedCaption),
                             AppText(
                               'Deleted ${dateLabel(d.deletedAt!)}',
                               style: context.mutedCaption,
@@ -68,7 +65,10 @@ class TrashScreen extends ConsumerWidget {
                                       try {
                                         await controller.restore({d.id});
                                         if (context.mounted) {
-                                          notice(context, 'Restored to Documents');
+                                          notice(
+                                            context,
+                                            'Restored to Documents',
+                                          );
                                         }
                                       } catch (_) {
                                         if (context.mounted) {
@@ -91,7 +91,10 @@ class TrashScreen extends ConsumerWidget {
                                             .read(documentsProvider.notifier)
                                             .purge(d.id);
                                         if (context.mounted) {
-                                          notice(context, 'Permanently deleted');
+                                          notice(
+                                            context,
+                                            'Permanently deleted',
+                                          );
                                         }
                                       } catch (_) {
                                         if (context.mounted) {

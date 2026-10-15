@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'app_extensions.dart';
+
 /// Decorative vector art uses the same tonal palette in either brightness.
 class AbstractArt extends StatelessWidget {
   const AbstractArt({super.key});
@@ -20,6 +21,7 @@ class AbstractArt extends StatelessWidget {
     ),
   );
 }
+
 class _Art extends CustomPainter {
   _Art(this.mint, this.container, this.coral, this.sand, this.accent);
   final Color mint, container, coral, sand, accent;

@@ -107,7 +107,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     title: 'Make yourself at home.',
     subtitle: 'A vault that feels like yours.',
     children: [
-      const AppCard(child:AppearancePanel()),
+      const AppCard(child: AppearancePanel()),
       if (ref.watch(liveModeProvider))
         AppCard(
           child: Column(
@@ -229,7 +229,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
               const SizedBox(height: Space.md),
-              if(ref.watch(liveModeProvider)) const ReminderPanel(),
+              if (ref.watch(liveModeProvider)) const ReminderPanel(),
             ],
           ),
         ),

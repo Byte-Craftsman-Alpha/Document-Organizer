@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_widgets.dart';
 import '../theme/abstract_art.dart';
+
 class WelcomeBanner extends StatelessWidget {
   const WelcomeBanner({super.key});
 

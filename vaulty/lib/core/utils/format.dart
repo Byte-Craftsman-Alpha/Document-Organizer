@@ -1,7 +1,8 @@
 import 'package:intl/intl.dart';
 import '../l10n/app_strings.dart';
 
-String dateLabel(DateTime value) => DateFormat.yMMMd(AppStrings.language).format(value);
+String dateLabel(DateTime value) =>
+    DateFormat.yMMMd(AppStrings.language).format(value);
 
 String bytesLabel(int bytes) => bytes >= 1000000000
     ? '${(bytes / 1000000000).toStringAsFixed(1)} GB'

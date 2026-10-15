@@ -149,3 +149,4 @@ Vaulty is designed and engineered by:
   - Website: [teamparadox.in](https://teamparadox.in)
 
 Licensed under the **MIT License**.
+

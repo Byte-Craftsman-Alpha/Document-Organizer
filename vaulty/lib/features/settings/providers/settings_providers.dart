@@ -9,7 +9,8 @@ final settingsProvider =
       SettingsController.new,
     );
 final themeModeProvider = Provider<ThemeMode>(
-  (ref) => switch (ref.watch(uiPreferencesProvider).theme ?? ref.watch(settingsProvider).valueOrNull?.theme) {
+  (ref) => switch (ref.watch(uiPreferencesProvider).theme ??
+      ref.watch(settingsProvider).valueOrNull?.theme) {
     'light' => ThemeMode.light,
     'dark' => ThemeMode.dark,
     _ => ThemeMode.system,

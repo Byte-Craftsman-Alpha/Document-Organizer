@@ -37,7 +37,10 @@ class _DesignGalleryState extends State<DesignGallery> {
               'Made for peace of mind',
               subtitle: 'Accessible, warm, deliberately simple.',
             ),
-            AppText('A place for what matters.', style: context.type.displaySmall),
+            AppText(
+              'A place for what matters.',
+              style: context.type.displaySmall,
+            ),
             const SizedBox(height: Space.md),
             Wrap(
               spacing: Space.xs,

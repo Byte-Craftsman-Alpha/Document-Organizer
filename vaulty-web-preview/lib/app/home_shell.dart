@@ -29,7 +29,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
     super.initState();
     IncomingShare.instance.revision.addListener(checkIncoming);
     RenewalBridge.instance.requests.addListener(checkRenewal);
-    WidgetsBinding.instance.addPostFrameCallback((_)=>checkRenewal());
+    WidgetsBinding.instance.addPostFrameCallback((_) => checkRenewal());
     WidgetsBinding.instance.addPostFrameCallback((_) => checkIncoming());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       VaultPreferences prefs;
@@ -69,12 +69,15 @@ class _HomeShellState extends ConsumerState<HomeShell>
   }
 
   Future<void> checkRenewal() async {
-    if(!ref.read(liveModeProvider)) return;
+    if (!ref.read(liveModeProvider)) return;
     try {
-      if(await RenewalBridge.instance.takeOpen() && mounted) context.go('/home');
+      if (await RenewalBridge.instance.takeOpen() && mounted) {
+        context.go('/home');
+      }
       await RenewalBridge.instance.check();
-    } catch(_){}
+    } catch (_) {}
   }
+
   bool reviewing = false;
   Future<void> checkIncoming() async {
     if (!ref.read(liveModeProvider) || reviewing) return;
@@ -114,27 +117,30 @@ class _HomeShellState extends ConsumerState<HomeShell>
   Widget build(BuildContext context) => Scaffold(
     body: FadeTransition(opacity: animation, child: widget.shell),
     bottomNavigationBar: NavigationBar(
-        selectedIndex: widget.shell.currentIndex >= 2
-            ? widget.shell.currentIndex + 1
-            : widget.shell.currentIndex,
-        onDestinationSelected: select,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: context.tr('Home'),
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.folder_outlined),
-            selectedIcon: Icon(Icons.folder),
-            label: context.tr('Documents'),
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.add_circle_outline),
-            label: context.tr('Upload'),
-          ),
-          NavigationDestination(icon: Icon(Icons.tune), label: context.tr('Settings')),
-        ],
-      ),
+      selectedIndex: widget.shell.currentIndex >= 2
+          ? widget.shell.currentIndex + 1
+          : widget.shell.currentIndex,
+      onDestinationSelected: select,
+      destinations: [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: context.tr('Home'),
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.folder_outlined),
+          selectedIcon: Icon(Icons.folder),
+          label: context.tr('Documents'),
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.add_circle_outline),
+          label: context.tr('Upload'),
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.tune),
+          label: context.tr('Settings'),
+        ),
+      ],
+    ),
   );
 }

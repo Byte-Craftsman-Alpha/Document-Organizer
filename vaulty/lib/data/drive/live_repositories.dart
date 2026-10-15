@@ -93,9 +93,9 @@ class GoogleAuthRepository
         store.api.verifyAccount();
         await device.setLockEnabled(owner, value.biometric);
         try {
-          final docs=await store.documents();
+          final docs = await store.documents();
           store.api.verifyAccount();
-          await device.synchronize(docs, value, owner:owner);
+          await device.synchronize(docs, value, owner: owner);
         } catch (_) {
           /* Preference persisted; OS reminders can be retried. */
         }
@@ -149,9 +149,9 @@ class DriveDocumentRepository
   Future<List<Document>> _list() async {
     final docs = await store.documents();
     try {
-      final prefs=await store.preferences();
+      final prefs = await store.preferences();
       store.api.verifyAccount();
-      await device.synchronize(docs, prefs, owner:store.api.identity.owner);
+      await device.synchronize(docs, prefs, owner: store.api.identity.owner);
     } catch (_) {
       /* Do not hide a successfully loaded vault over OS notification errors. */
     }
@@ -497,11 +497,12 @@ class DriveDocumentRepository
   @override
   Future<bool> enableReminders() => device.enableReminders();
   Future<void> _syncReminders() async {
-    final docs=await store.documents(purge:false);
-    final prefs=await store.preferences();
+    final docs = await store.documents(purge: false);
+    final prefs = await store.preferences();
     store.api.verifyAccount();
-    await device.synchronize(docs,prefs,owner:store.api.identity.owner);
+    await device.synchronize(docs, prefs, owner: store.api.identity.owner);
   }
+
   @override
   Future<void> lockChallenge() => device.unlock();
 

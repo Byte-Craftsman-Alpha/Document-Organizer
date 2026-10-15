@@ -27,23 +27,23 @@ Future<bool> trashDocuments(
   try {
     await controller.trash(ids);
     if (!context.mounted) return true;
-  notice(
-    context,
-    'Moved to Trash',
-    undo: () async {
-      if (auth is LiveAuthRepository &&
-          auth.connection.vaultIdentity != operationOwner) {
-        return;
-      }
-      try {
-        await controller.restore(ids);
-      } catch (_) {
-        if (context.mounted) {
-          notice(context, 'Couldn’t restore. Please retry in Trash.');
+    notice(
+      context,
+      'Moved to Trash',
+      undo: () async {
+        if (auth is LiveAuthRepository &&
+            auth.connection.vaultIdentity != operationOwner) {
+          return;
         }
-      }
-    },
-  );
+        try {
+          await controller.restore(ids);
+        } catch (_) {
+          if (context.mounted) {
+            notice(context, 'Couldn’t restore. Please retry in Trash.');
+          }
+        }
+      },
+    );
     return true;
   } catch (_) {
     if (context.mounted) {

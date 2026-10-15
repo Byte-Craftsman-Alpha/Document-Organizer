@@ -8,9 +8,7 @@ abstract final class AppTypography {
       fontWeight: weight,
       height: 1.45,
       color: ink,
-    ).copyWith(
-      fontFamilyFallback: const ['NotoSansDevanagari'],
-    );
+    ).copyWith(fontFamilyFallback: const ['NotoSansDevanagari']);
     final display = style(28, FontWeight.w600);
     final title = style(20, FontWeight.w600);
     final subtitle = style(16, FontWeight.w500);

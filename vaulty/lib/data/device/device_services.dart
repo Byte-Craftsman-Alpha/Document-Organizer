@@ -44,10 +44,10 @@ class DeviceServices {
         android: AndroidInitializationSettings('ic_stat_vaulty'),
       ),
     );
-    final p=await SharedPreferences.getInstance();
-    if(p.getBool('vaulty.reminders.v4.migrated')!=true) {
+    final p = await SharedPreferences.getInstance();
+    if (p.getBool('vaulty.reminders.v4.migrated') != true) {
       await notifications.cancelAll();
-      await p.setBool('vaulty.reminders.v4.migrated',true);
+      await p.setBool('vaulty.reminders.v4.migrated', true);
     }
   }
 
@@ -66,19 +66,34 @@ class DeviceServices {
         false;
   }
 
-  Future<void> synchronize(List<Document> docs,VaultPreferences prefs,{String? owner}) async {
-    if(!supported || owner==null) return;
-    final generation=++_scheduleGeneration;
+  Future<void> synchronize(
+    List<Document> docs,
+    VaultPreferences prefs, {
+    String? owner,
+  }) async {
+    if (!supported || owner == null) return;
+    final generation = ++_scheduleGeneration;
     await initialize();
-    if(generation!=_scheduleGeneration) return;
-    await RenewalBridge.channel.invokeMethod<void>('update',{
-      'owner':owner,'enabled':prefs.remindersEnabled,'days':prefs.reminderDays,'language':AppStrings.language,
-      'dates':[for(final d in docs) if(!d.isDeleted&&d.renewalRequired&&d.expiry!=null) '${d.expiry!.year.toString().padLeft(4,'0')}-${d.expiry!.month.toString().padLeft(2,'0')}-${d.expiry!.day.toString().padLeft(2,'0')}'],
+    if (generation != _scheduleGeneration) return;
+    await RenewalBridge.channel.invokeMethod<void>('update', {
+      'owner': owner,
+      'enabled': prefs.remindersEnabled,
+      'days': prefs.reminderDays,
+      'language': AppStrings.language,
+      'dates': [
+        for (final d in docs)
+          if (!d.isDeleted && d.renewalRequired && d.expiry != null)
+            '${d.expiry!.year.toString().padLeft(4, '0')}-${d.expiry!.month.toString().padLeft(2, '0')}-${d.expiry!.day.toString().padLeft(2, '0')}',
+      ],
     });
   }
+
   Future<void> cancelReminders() async {
     _scheduleGeneration++;
-    if(supported) {await initialize();await RenewalBridge.channel.invokeMethod<void>('clear');}
+    if (supported) {
+      await initialize();
+      await RenewalBridge.channel.invokeMethod<void>('clear');
+    }
   }
 
   Future<void> unlock() async {
@@ -95,7 +110,10 @@ class DeviceServices {
       );
     }
     final ok = await auth.authenticate(
-      localizedReason: AppStrings.translate('Unlock your private Vaulty documents',AppStrings.language),
+      localizedReason: AppStrings.translate(
+        'Unlock your private Vaulty documents',
+        AppStrings.language,
+      ),
       options: const AuthenticationOptions(
         biometricOnly: true,
         stickyAuth: true,
