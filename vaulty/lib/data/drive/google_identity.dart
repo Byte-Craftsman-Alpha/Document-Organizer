@@ -1,0 +1,228 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../domain/repositories/live_capabilities.dart';
+import 'account_verifier.dart';
+
+abstract interface class DriveIdentity {
+  String? get owner;
+  int get generation;
+  Future<String> token();
+  Future<void> rejectToken(String token);
+}
+
+class GoogleIdentity implements DriveIdentity {
+  GoogleIdentity({required this.webClientId});
+  final String webClientId;
+  String? startupError;
+  final _verifier = DriveAccountVerifier();
+  String? _verifiedToken, _verifiedAccount;
+  static const scopes = ['https://www.googleapis.com/auth/drive.appdata'];
+  final _changes = StreamController<AccountConnection>.broadcast();
+  Stream<AccountConnection> get changes => _changes.stream;
+  AccountConnection connection = const AccountConnection();
+  GoogleSignInAccount? _user;
+  Future<void>? _initialization;
+  bool _interactive = false;
+  @override
+  int generation = 0;
+  @override
+  String? get owner => connection.vaultIdentity;
+  String? get configurationError =>
+      startupError ??
+      (webClientId.isEmpty ||
+              !webClientId.endsWith('.apps.googleusercontent.com')
+          ? 'This build is not configured for Google. The developer must set GOOGLE_WEB_CLIENT_ID and register the Android signing certificate or this website’s origin. See START_HERE.md.'
+          : null);
+  void _emit({bool ready = false, String? error}) {
+    connection = AccountConnection(
+      id: _user?.id,
+      name: _user?.displayName,
+      email: _user?.email,
+      driveReady: ready,
+      error: error,
+    );
+    _changes.add(connection);
+  }
+
+  Future<void> initialize() => _initialization ??= _initialize();
+  Future<void> _initialize() async {
+    if (configurationError != null) return;
+    await GoogleSignIn.instance.initialize(
+      clientId: kIsWeb ? webClientId : null,
+      serverClientId: kIsWeb ? null : webClientId,
+    );
+    GoogleSignIn.instance.authenticationEvents.listen(
+      (event) {
+        if (_interactive) return;
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          unawaited(_accept(event.user));
+        } else if (event is GoogleSignInAuthenticationEventSignOut) {
+          generation++;
+          _user = null;
+          _emit();
+        }
+      },
+      onError: (Object e) => _emit(
+        error:
+            'Google sign-in failed. Check the app’s OAuth configuration, then try again.',
+      ),
+    );
+    final attempt = GoogleSignIn.instance.attemptLightweightAuthentication();
+    if (attempt != null) {
+      try {
+        final user = await attempt;
+        if (user != null) await _accept(user);
+      } catch (_) {
+        /* User may sign in explicitly. */
+      }
+    }
+  }
+
+  Future<void> _verify(GoogleSignInAccount user, String accessToken) async {
+    final epoch = generation;
+    if (_user?.id != user.id) {
+      throw const VaultFailure('The Google account changed. Try again.');
+    }
+    if (_verifiedToken == accessToken && _verifiedAccount == user.id) return;
+    try {
+      await _verifier.verify(accessToken, user.email);
+    } catch (e) {
+      await user.authorizationClient.clearAuthorizationToken(
+        accessToken: accessToken,
+      );
+      if (epoch == generation) {
+        _emit(error: e is VaultFailure ? e.message : 'Reconnect Google Drive.');
+      }
+      rethrow;
+    }
+    if (epoch != generation || _user?.id != user.id) {
+      throw const VaultFailure('The Google account changed. Try again.');
+    }
+    _verifiedToken = accessToken;
+    _verifiedAccount = user.id;
+  }
+
+  Future<void> _accept(GoogleSignInAccount user) async {
+    if (_user?.id == user.id && connection.driveReady) return;
+    if (_user?.id != user.id) generation++;
+    _user = user;
+    _emit();
+    final epoch = generation;
+    try {
+      final grant = await user.authorizationClient.authorizationForScopes(
+        scopes,
+      );
+      if (grant != null) await _verify(user, grant.accessToken);
+      if (epoch == generation) _emit(ready: grant != null);
+    } catch (e) {
+      if (epoch == generation) {
+        _emit(error: e is VaultFailure ? e.message : null);
+      }
+    }
+  }
+
+  Future<String> authorize() async {
+    if (_interactive) {
+      throw const VaultFailure(
+        'Finish the current Google sign-in prompt first.',
+      );
+    }
+    if (configurationError != null) throw VaultFailure(configurationError!);
+    await initialize();
+    _interactive = true;
+    try {
+      if (_user == null) {
+        if (kIsWeb) {
+          throw const VaultFailure(
+            'Use the Google sign-in button first, then connect Drive.',
+          );
+        }
+        final user = await GoogleSignIn.instance.authenticate();
+        if (_user?.id != user.id) generation++;
+        _user = user;
+      }
+      final user = _user!;
+      final epoch = generation;
+      final grant = await user.authorizationClient.authorizeScopes(scopes);
+      if (epoch != generation || _user?.id != user.id) {
+        throw const VaultFailure(
+          'Sign-in stopped because the account changed. Please try again.',
+        );
+      }
+      await _verify(user, grant.accessToken);
+      _emit(ready: true);
+      return user.displayName ?? user.email;
+    } on GoogleSignInException catch (e) {
+      _emit(
+        error: e.code == GoogleSignInExceptionCode.canceled
+            ? 'Sign-in was cancelled or could not complete. If this repeats after selecting an account, check the package name, signing SHA-1 and Web client ID.'
+            : 'Google could not authorize this app. Check the OAuth client and signing certificate.',
+      );
+      throw VaultFailure(connection.error!);
+    } finally {
+      _interactive = false;
+    }
+  }
+
+  void useOffline(Map<String, dynamic> account) {
+    generation++;
+    _user = null;
+    _verifiedToken = null;
+    _verifiedAccount = null;
+    connection = AccountConnection(
+      id: account['id'],
+      name: account['name'],
+      email: account['email'],
+      driveReady: true,
+      offline: true,
+    );
+    _changes.add(connection);
+  }
+
+  @override
+  Future<String> token() async {
+    if (connection.offline) throw const DriveOfflineFailure();
+    final user = _user;
+    final epoch = generation;
+    if (user == null || !connection.driveReady) {
+      throw const VaultFailure('Connect Google Drive to continue.');
+    }
+    final grant = await user.authorizationClient.authorizationForScopes(scopes);
+    if (epoch != generation) {
+      throw const VaultFailure('The Google account changed. Please retry.');
+    }
+    if (grant == null) {
+      _emit(error: 'Drive access is missing or expired. Connect Drive again.');
+      throw const VaultFailure(
+        'Drive access is missing or expired. Connect Drive again.',
+      );
+    }
+    await _verify(user, grant.accessToken);
+    return grant.accessToken;
+  }
+
+  @override
+  Future<void> rejectToken(String token) async {
+    _verifiedToken = null;
+    _verifiedAccount = null;
+    try {
+      await _user?.authorizationClient.clearAuthorizationToken(
+        accessToken: token,
+      );
+    } finally {
+      _emit(
+        error: 'Your Google session needs permission again. Reconnect Drive.',
+      );
+    }
+  }
+
+  Future<void> signOut() async {
+    _verifiedToken = null;
+    _verifiedAccount = null;
+    generation++;
+    _user = null;
+    _emit();
+    await GoogleSignIn.instance.signOut();
+  }
+}

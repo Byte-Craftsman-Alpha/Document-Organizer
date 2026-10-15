@@ -1,0 +1,51 @@
+name: vaulty
+description: A device-driven personal vault backed by the user’s Google Drive.
+publish_to: none
+version: 0.3.0+3
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_riverpod: ^2.6.1
+  go_router: ^16.3.0
+  google_fonts: ^6.3.2
+  google_sign_in: ^7.2.0
+  google_sign_in_web: ^1.1.0
+  http: ^1.6.0
+  file_picker: ^10.3.0
+  image_picker: ^1.2.0
+  share_plus: ^12.0.0
+  cross_file: ^0.3.5
+  path_provider: ^2.1.5
+  open_filex: ^4.7.0
+  archive: ^4.0.7
+  local_auth: ^2.3.0
+  flutter_local_notifications: ^19.5.0
+  timezone: ^0.10.1
+  shared_preferences: ^2.5.3
+  uuid: ^4.6.0
+  crypto: ^3.0.6
+  cryptography: ^2.7.0
+  flutter_secure_storage: ^9.2.4
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+    - assets/config/google.json
+  fonts:
+    - family: Public Sans
+      fonts:
+        - asset: assets/fonts/PublicSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PublicSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PublicSans-SemiBold.ttf
+          weight: 600

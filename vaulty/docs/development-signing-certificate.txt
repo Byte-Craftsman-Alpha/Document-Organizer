@@ -1,0 +1,26 @@
+Alias name: androiddebugkey
+Creation date: Oct 9, 2026
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=Vaulty Development, O=Vaulty
+Issuer: CN=Vaulty Development, O=Vaulty
+Serial number: 2d7362c0
+Valid from: Fri Oct 09 23:37:04 UTC 2026 until: Tue Feb 24 23:37:04 UTC 2054
+Certificate fingerprints:
+	 SHA1: 23:4F:81:95:D7:A4:9E:C7:4B:2B:16:9C:23:93:69:93:59:56:05:68
+	 SHA256: BE:34:1D:AC:73:B5:80:00:F0:D6:EA:E2:5D:98:63:EC:01:45:18:7E:14:10:CC:AD:84:D9:C8:A3:2C:1A:D4:4A
+Signature algorithm name: SHA256withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: 46 43 A1 0F E8 91 0B 5C   F7 CD 32 30 4E 75 17 A1  FC.....\..20Nu..
+0010: B5 00 32 04                                        ..2.
+]
+]
+

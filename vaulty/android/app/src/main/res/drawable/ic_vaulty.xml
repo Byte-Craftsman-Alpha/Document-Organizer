@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <path android:fillColor="@color/vault_background" android:pathData="M0,0H108V108H0Z" />
+  <path android:fillColor="@color/vault_primary" android:pathData="M27,33Q24,33 24,38V72Q24,77 29,77H79Q84,77 84,72V42Q84,37 79,37H52L47,33Z" />
+  <path android:fillColor="@color/vault_background" android:pathData="M48,51Q48,43 54,43Q60,43 60,51V54H63V68H45V54H48ZM51,54H57V51Q57,47 54,47Q51,47 51,51Z" />
+</vector>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="LaunchTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:windowBackground">@drawable/launch_background</item>
+    <item name="android:statusBarColor">@color/vault_background</item>
+    <item name="android:navigationBarColor">@color/vault_background</item>
+  </style>
+  <style name="NormalTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:windowBackground">@color/vault_background</item>
+    <item name="android:statusBarColor">@color/vault_background</item>
+    <item name="android:navigationBarColor">@color/vault_background</item>
+  </style>
+</resources>

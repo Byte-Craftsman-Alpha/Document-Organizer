@@ -1,0 +1,6 @@
+# Developer-only release signing configuration. Copy to key.properties locally.
+# Never commit/upload the real key.properties or production keystore.
+storeFile=/absolute/path/to/your/upload-keystore.jks
+storePassword=REPLACE_LOCALLY
+keyAlias=upload
+keyPassword=REPLACE_LOCALLY

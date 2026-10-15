@@ -1,0 +1,73 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+*~
+
+# Development and local machine artifacts
+.android/
+.config/
+.sudo_as_admin_successful
+uploads/
+
+# Build artifacts & packaged archives (binaries should be distributed via GitHub Releases/Workflows)
+*.apk
+*.aab
+*.zip
+*.tar.gz
+*.7z
+
+# Dart & Flutter artifacts
+.dart_tool/
+**/.dart_tool/
+.last_build_id
+**/.last_build_id
+.flutter-plugins
+**/.flutter-plugins
+.flutter-plugins-dependencies
+**/.flutter-plugins-dependencies
+.packages
+**/.packages
+.pub/
+**/.pub/
+.pub-cache/
+**/.pub-cache/
+build/
+**/build/
+coverage/
+**/coverage/
+doc/api/
+**/doc/api/
+
+# Symbols & Maps
+app.*.symbols
+app.*.map.json
+
+# IDE and Editors
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+*.ipr
+*.iws
+.vscode/
+**/.vscode/
+.atom/
+.history/
+
+# Keystores, signing certificates, and private credentials
+**/*.keystore
+**/*.jks
+**/*.key
+**/*.p12
+**/key.properties
+client_secret*.json
+**/credentials/
+/config/google.json
