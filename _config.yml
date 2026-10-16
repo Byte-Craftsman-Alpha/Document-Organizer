@@ -1,0 +1,22 @@
+title: Vaulty
+description: "Your Private, Decentralized Personal Document Vault"
+url: "https://byte-craftsman-alpha.github.io"
+baseurl: "/Document-Organizer"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+include:
+  - "googlefc74d61d7aae8fbf.html"
+  - "docs/assets"
+
+exclude:
+  - "vaulty"
+  - "vaulty-web-preview"
+  - ".android"
+  - ".config"
+  - "*.apk"
+  - "*.zip"

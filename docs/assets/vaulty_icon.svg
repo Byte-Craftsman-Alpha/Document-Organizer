@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <defs>
+    <linearGradient id="vault_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4DDDA" />
+      <stop offset="100%" stop-color="#EED5D1" />
+    </linearGradient>
+    <filter id="vault_shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#8C4843" flood-opacity="0.18" />
+    </filter>
+  </defs>
+  <!-- Material 3 Rounded Container Base -->
+  <rect x="2" y="2" width="104" height="104" rx="26" fill="url(#vault_bg)" />
+  <!-- Folder Icon -->
+  <path fill="#8C4843" filter="url(#vault_shadow)" d="M27,33 Q24,33 24,38 V72 Q24,77 29,77 H79 Q84,77 84,72 V42 Q84,37 79,37 H52 L47,33 Z" />
+  <!-- Vault Padlock Cutout -->
+  <path fill="#F4DDDA" fill-rule="evenodd" d="M48,51 Q48,43 54,43 Q60,43 60,51 V54 H63 V68 H45 V54 H48 Z M51,54 H57 V51 Q57,47 54,47 Q51,47 51,51 Z" />
+</svg>
