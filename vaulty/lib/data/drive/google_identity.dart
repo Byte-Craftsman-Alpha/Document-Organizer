@@ -40,9 +40,9 @@ class GoogleIdentity implements DriveIdentity {
 
   void _emit({bool ready = false, String? error}) {
     connection = AccountConnection(
-      id: _user?.id ?? connection.id,
-      name: _user?.displayName ?? connection.name,
-      email: _user?.email ?? connection.email,
+      id: _user?.id ?? (ready ? connection.id : null),
+      name: _user?.displayName ?? (ready ? connection.name : null),
+      email: _user?.email ?? (ready ? connection.email : null),
       driveReady: ready,
       error: error,
     );
@@ -96,7 +96,7 @@ class GoogleIdentity implements DriveIdentity {
       final attempt = GoogleSignIn.instance.attemptLightweightAuthentication();
       if (attempt != null) {
         try {
-          final user = await attempt;
+          final user = await attempt.timeout(const Duration(seconds: 2));
           if (user != null) {
             await _accept(user);
           }
@@ -216,12 +216,15 @@ class GoogleIdentity implements DriveIdentity {
       final detail = e.description != null && e.description!.isNotEmpty
           ? ' (${e.description})'
           : '';
+      final isCanceled = e.code == GoogleSignInExceptionCode.canceled;
       _emit(
-        error: e.code == GoogleSignInExceptionCode.canceled
-            ? 'Sign-in was cancelled or could not complete. If this repeats after selecting an account, check the package name, signing SHA-1 and Web client ID.'
+        error: isCanceled
+            ? null
             : 'Google could not authorize this app$detail. Check the OAuth client and signing certificate.',
       );
-      throw VaultFailure(connection.error!);
+      throw VaultFailure(
+        isCanceled ? 'Sign-in was cancelled.' : connection.error!,
+      );
     } catch (e) {
       debugPrint('Unexpected sign-in error: $e');
       _emit(error: 'Google sign-in error: $e');
@@ -333,6 +336,10 @@ class GoogleIdentity implements DriveIdentity {
     _user = null;
     connection = const AccountConnection();
     _changes.add(connection);
-    await GoogleSignIn.instance.signOut();
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (e) {
+      debugPrint('GoogleSignIn signOut background error: $e');
+    }
   }
 }

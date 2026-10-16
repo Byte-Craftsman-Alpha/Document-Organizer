@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/drive/google_identity.dart';
@@ -31,10 +32,9 @@ Future<List<Override>> liveOverrides({String? clientId}) async {
   final device = DeviceServices();
   final auth = GoogleAuthRepository(google, store, device);
   try {
-    await auth.initialize().timeout(const Duration(seconds: 30));
-  } catch (_) {
-    google.startupError =
-        'Google sign-in could not initialize. Check your connection and OAuth client ID, then restart the app. No mock data was substituted.';
+    await auth.initialize().timeout(const Duration(seconds: 4));
+  } catch (e) {
+    debugPrint('auth.initialize non-fatal startup notice: $e');
   }
   return [
     authRepositoryProvider.overrideWithValue(auth),

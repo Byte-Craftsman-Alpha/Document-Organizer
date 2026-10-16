@@ -86,10 +86,9 @@ class GoogleIdentity implements DriveIdentity {
           _emit();
         }
       },
-      onError: (Object e) => _emit(
-        error:
-            'Google sign-in failed. Check the app’s OAuth configuration, then try again.',
-      ),
+      onError: (Object e) {
+        debugPrint('GoogleSignIn background event: $e');
+      },
     );
     if (!skipLightweightAuth) {
       final attempt = GoogleSignIn.instance.attemptLightweightAuthentication();
