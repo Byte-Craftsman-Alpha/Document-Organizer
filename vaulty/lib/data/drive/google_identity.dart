@@ -86,10 +86,11 @@ class GoogleIdentity implements DriveIdentity {
           _emit();
         }
       },
-      onError: (Object e) => _emit(
-        error:
-            'Google sign-in failed. Check the app’s OAuth configuration, then try again.',
-      ),
+      onError: (Object e) {
+        // Background stream errors (e.g. no saved credentials on fresh launch)
+        // should not pollute connection.error or show a failure before user interacts.
+        debugPrint('GoogleSignIn background event: $e');
+      },
     );
     if (!skipLightweightAuth) {
       final attempt = GoogleSignIn.instance.attemptLightweightAuthentication();
@@ -180,6 +181,7 @@ class GoogleIdentity implements DriveIdentity {
     }
     await initialize();
     _interactive = true;
+    _emit(error: null);
     try {
       if (_user == null) {
         if (kIsWeb) {
@@ -210,11 +212,19 @@ class GoogleIdentity implements DriveIdentity {
       });
       return user.displayName ?? user.email;
     } on GoogleSignInException catch (e) {
+      debugPrint('GoogleSignInException: ${e.code} - ${e.description} - ${e.details}');
+      final detail = e.description != null && e.description!.isNotEmpty
+          ? ' (${e.description})'
+          : '';
       _emit(
         error: e.code == GoogleSignInExceptionCode.canceled
             ? 'Sign-in was cancelled or could not complete. If this repeats after selecting an account, check the package name, signing SHA-1 and Web client ID.'
-            : 'Google could not authorize this app. Check the OAuth client and signing certificate.',
+            : 'Google could not authorize this app$detail. Check the OAuth client and signing certificate.',
       );
+      throw VaultFailure(connection.error!);
+    } catch (e) {
+      debugPrint('Unexpected sign-in error: $e');
+      _emit(error: 'Google sign-in error: $e');
       throw VaultFailure(connection.error!);
     } finally {
       _interactive = false;
