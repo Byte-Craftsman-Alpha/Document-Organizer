@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:solar_icons/solar_icons.dart';
 
 /// Centralized icon registry using Solar Icons with smoother curves and softer shapes.
