@@ -10,13 +10,16 @@ import '../../../domain/repositories/live_capabilities.dart';
 import '../../documents/providers/document_providers.dart';
 
 class _Draft {
-  _Draft(this.file)
+  _Draft(this.file, {String? defaultOwner})
     : title = TextEditingController(
-        text: file.name.replaceFirst(RegExp(r'\.[^.]+$'), ''),
-      );
+        text: file.name.replaceFirst(RegExp(r'\.[^.]+$'), '').trim().isEmpty
+            ? 'Document'
+            : file.name.replaceFirst(RegExp(r'\.[^.]+$'), ''),
+      ),
+      owner = TextEditingController(text: defaultOwner ?? '');
   final IncomingFile file;
   final TextEditingController title,
-      owner = TextEditingController(),
+      owner,
       tags = TextEditingController();
   bool selected = true, renewal = false, done = false;
   DateTime? expiry;
@@ -46,6 +49,22 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   void initState() {
     super.initState();
     IncomingShare.instance.revision.addListener(load);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && commonOwner.text.isEmpty) {
+        final existing = ref
+            .read(documentsProvider)
+            .valueOrNull
+            ?.map((d) => d.belongsTo)
+            .where((s) => s.isNotEmpty)
+            .toSet();
+        if (existing != null && existing.isNotEmpty) {
+          commonOwner.text = existing.first;
+          for (final d in drafts.where((d) => !d.done)) {
+            if (d.owner.text.isEmpty) d.owner.text = commonOwner.text;
+          }
+        }
+      }
+    });
     load();
   }
 
@@ -54,12 +73,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     try {
       final incoming = await IncomingShare.instance.pending();
       if (!mounted) return;
+      // Remove any completed drafts that are no longer in incoming
+      drafts.removeWhere(
+        (d) => d.done && !incoming.any((file) => file.id == d.file.id),
+      );
       for (final file in incoming) {
         if (drafts.any((d) => d.file.id == file.id)) continue;
-        final draft = _Draft(file)
+        final draft = _Draft(file, defaultOwner: commonOwner.text.trim())
           ..error = file.error
           ..selected = file.error == null;
-        if (file.error == null) {
+        if (file.kind != null && file.kind!.isNotEmpty) {
+          draft.detectedKind = FileKind.values.asNameMap()[file.kind];
+        }
+        if (draft.detectedKind == null && file.error == null) {
           try {
             draft.detectedKind = (await IncomingShare.instance.read(file)).kind;
           } catch (e) {
@@ -102,7 +128,6 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   }
 
   Future<void> import() async {
-    if (!form.currentState!.validate()) return;
     final chosen = drafts
         .where((d) => d.selected && !d.done && d.detectedKind != null)
         .toList();
@@ -110,10 +135,30 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       notice(context, 'Select at least one supported file.');
       return;
     }
-    if (chosen.any((d) => d.renewal && d.expiry == null)) {
-      notice(context, 'Choose an expiry date for every renewal document.');
-      return;
+    // Auto-apply common owner if individual draft owner is blank
+    if (commonOwner.text.trim().isNotEmpty) {
+      for (final draft in chosen) {
+        if (draft.owner.text.trim().isEmpty) {
+          draft.owner.text = commonOwner.text.trim();
+        }
+      }
     }
+    // Direct validation on chosen drafts to avoid ListView virtualization bugs
+    for (final draft in chosen) {
+      if (draft.title.text.trim().isEmpty) {
+        notice(context, 'Enter a title for every selected file.');
+        return;
+      }
+      if (draft.owner.text.trim().isEmpty) {
+        notice(context, 'Enter who the document belongs to for every selected file.');
+        return;
+      }
+      if (draft.renewal && draft.expiry == null) {
+        notice(context, 'Choose an expiry date for every renewal document.');
+        return;
+      }
+    }
+    if (!form.currentState!.validate()) return;
     final identity = ref.read(vaultIdentityProvider);
     if (identity == null) return;
     setState(() {
@@ -170,7 +215,21 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     ref.invalidate(documentsProvider);
     ref.read(documentsProvider.notifier).refreshRelated();
     setState(() => busy = false);
+    final successCount = chosen.where((d) => d.done).length;
+    // Remove completed drafts from the list
+    drafts.removeWhere((d) => d.done);
     await load();
+    if (mounted) {
+      if (successCount > 0) {
+        notice(
+          context,
+          '$successCount document${successCount > 1 ? 's' : ''} imported into your vault.',
+        );
+      }
+      if (drafts.isEmpty || drafts.every((d) => d.done)) {
+        context.go('/documents');
+      }
+    }
   }
 
   Future<void> discardAll() async {
@@ -223,6 +282,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                             AppTextField(
                               label: 'Belongs to — apply to all',
                               controller: commonOwner,
+                              onChanged: (val) {
+                                for (final d in drafts.where((d) => !d.done)) {
+                                  d.owner.text = val;
+                                }
+                              },
                             ),
                             const SizedBox(height: Space.sm),
                             AppButton(
@@ -268,7 +332,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                                             ),
                                     )
                                   else
-                                    const Icon(Icons.check_circle_outline),
+                                    const Icon(AppIcons.check),
                                 ],
                               ),
                               AppText(
@@ -327,7 +391,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                                         ? 'Choose expiry date'
                                         : dateLabel(draft.expiry!),
                                     secondary: true,
-                                    icon: Icons.calendar_today_outlined,
+                                    icon: AppIcons.calendar,
                                     onPressed: busy
                                         ? null
                                         : () async {
@@ -392,7 +456,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     ],
                     AppButton(
                       label: busy ? 'Importing…' : 'Import selected files',
-                      icon: Icons.upload_outlined,
+                      icon: AppIcons.upload,
                       onPressed: busy || drafts.every((d) => d.done)
                           ? null
                           : import,

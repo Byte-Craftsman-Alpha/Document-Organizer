@@ -69,6 +69,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
   }
 
   Future<void> checkRenewal() async {
+    if (!mounted) return;
     if (!ref.read(liveModeProvider)) return;
     try {
       if (await RenewalBridge.instance.takeOpen() && mounted) {
@@ -80,6 +81,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
 
   bool reviewing = false;
   Future<void> checkIncoming() async {
+    if (!mounted) return;
     if (!ref.read(liveModeProvider) || reviewing) return;
     try {
       final pending = await IncomingShare.instance.pending();
@@ -123,21 +125,23 @@ class _HomeShellState extends ConsumerState<HomeShell>
       onDestinationSelected: select,
       destinations: [
         NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
+          icon: const Icon(AppIcons.home),
+          selectedIcon: const Icon(AppIcons.homeActive),
           label: context.tr('Home'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.folder_outlined),
-          selectedIcon: Icon(Icons.folder),
+          icon: const Icon(AppIcons.documents),
+          selectedIcon: const Icon(AppIcons.documentsActive),
           label: context.tr('Documents'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.add_circle_outline),
+          icon: const Icon(AppIcons.upload),
+          selectedIcon: const Icon(AppIcons.uploadActive),
           label: context.tr('Upload'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.tune),
+          icon: const Icon(AppIcons.settings),
+          selectedIcon: const Icon(AppIcons.settingsActive),
           label: context.tr('Settings'),
         ),
       ],

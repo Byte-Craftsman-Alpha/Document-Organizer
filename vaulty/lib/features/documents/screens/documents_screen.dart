@@ -56,12 +56,12 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
           if (selected.isNotEmpty) ...[
             AppIconButton(
               label: 'Cancel selection',
-              icon: Icons.close,
+              icon: AppIcons.close,
               onPressed: () => setState(selected.clear),
             ),
             AppIconButton(
               label: 'Move selected to Trash',
-              icon: Icons.delete_outline,
+              icon: AppIcons.trash,
               onPressed: () async {
                 await trashDocuments(context, ref, Set.of(selected));
                 if (mounted) setState(selected.clear);
@@ -70,7 +70,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
           ] else
             AppIconButton(
               label: 'Advanced search',
-              icon: Icons.manage_search,
+              icon: AppIcons.search,
               onPressed: () => context.push('/search'),
             ),
         ],
@@ -109,7 +109,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
                         const SizedBox(height: Space.lg),
                         AppTextField(
                           label: 'Find a document',
-                          icon: Icons.search,
+                          icon: AppIcons.search,
                           onChanged: (v) =>
                               ref.read(quickQueryProvider.notifier).state = v,
                         ),
@@ -157,7 +157,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
                             AppPress(
                               child: PopupMenuButton<DocumentSort>(
                                 tooltip: context.tr('Sort documents'),
-                                icon: const Icon(Icons.sort),
+                                icon: const Icon(AppIcons.sort),
                                 onSelected: (s) =>
                                     ref.read(quickSortProvider.notifier).state =
                                         s,
@@ -174,8 +174,8 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
                             AppIconButton(
                               label: grid ? 'Switch to list' : 'Switch to grid',
                               icon: grid
-                                  ? Icons.view_list_outlined
-                                  : Icons.grid_view,
+                                  ? AppIcons.list
+                                  : AppIcons.grid,
                               onPressed: () {
                                 animateChange();
                                 setState(() => grid = !grid);
@@ -217,7 +217,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
                             message: 'Add a document, or adjust your filters.',
                             action: AppButton(
                               label: 'Add document',
-                              icon: Icons.add,
+                              icon: AppIcons.add,
                               onPressed: () => showSourceSheet(context),
                             ),
                           ),
@@ -245,7 +245,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen>
                                           QuickShareButton(id: d.id),
                                         if (selected.contains(d.id))
                                           const Icon(
-                                            Icons.check_circle_outline,
+                                            AppIcons.check,
                                           ),
                                       ],
                                     ),
@@ -358,7 +358,7 @@ class _SwipeBackground extends StatelessWidget {
       borderRadius: Corners.card,
     ),
     child: Icon(
-      share ? Icons.ios_share : Icons.delete_outline,
+      share ? AppIcons.share : AppIcons.trash,
       semanticLabel: share ? 'Share' : 'Move to Trash',
       color: context.tokens.statusInk,
     ),

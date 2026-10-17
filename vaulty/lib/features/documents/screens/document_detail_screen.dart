@@ -81,7 +81,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
     appBar: AppBar(
       title: const AppText('Document'),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(AppIcons.back),
         onPressed: () {
           HapticFeedback.lightImpact();
           if (context.canPop()) {
@@ -120,7 +120,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                 AppButton(
                   label: 'Open / download file',
                   secondary: true,
-                  icon: Icons.open_in_new,
+                  icon: AppIcons.openInNew,
                   onPressed: busy
                       ? null
                       : () async {
@@ -188,7 +188,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                 children: [
                   AppButton(
                     label: 'Edit details',
-                    icon: Icons.edit_outlined,
+                    icon: AppIcons.edit,
                     secondary: true,
                     onPressed: () => context.push('/document/${d.id}/edit'),
                   ),
@@ -204,7 +204,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
               const SizedBox(height: Space.lg),
               AppButton(
                 label: 'Move to Trash',
-                icon: Icons.delete_outline,
+                icon: AppIcons.trash,
                 danger: true,
                 onPressed: busy
                     ? null

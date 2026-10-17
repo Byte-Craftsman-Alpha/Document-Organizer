@@ -195,7 +195,7 @@ class _DocumentFormState extends ConsumerState<_DocumentForm> {
             message: ref.watch(liveModeProvider)
                 ? 'Your document is stored in your own Google Drive.'
                 : 'Mock upload complete. No file was sent to Drive.',
-            icon: Icons.task_alt,
+            icon: AppIcons.check,
             action: AppButton(
               label: 'View document',
               onPressed: () {
@@ -254,7 +254,7 @@ class _DocumentFormState extends ConsumerState<_DocumentForm> {
             AppCard(
               child: Row(
                 children: [
-                  const Icon(Icons.description_outlined),
+                  const Icon(AppIcons.document),
                   const SizedBox(width: Space.sm),
                   Expanded(
                     child: Column(
@@ -324,7 +324,7 @@ class _DocumentFormState extends ConsumerState<_DocumentForm> {
                             label: 'Expiry date *',
                             controller: expiryText,
                             readOnly: true,
-                            icon: Icons.event_outlined,
+                            icon: AppIcons.calendar,
                             onTap: pickExpiry,
                             validator: (_) => renewal && expiry == null
                                 ? 'Choose an expiry date.'
@@ -344,7 +344,7 @@ class _DocumentFormState extends ConsumerState<_DocumentForm> {
                   label: 'Date of upload',
                   controller: uploadText,
                   readOnly: true,
-                  icon: Icons.today_outlined,
+                  icon: AppIcons.calendar,
                 ),
               ],
             ),
@@ -367,7 +367,7 @@ class _DocumentFormState extends ConsumerState<_DocumentForm> {
           ],
           AppButton(
             label: widget.original == null ? 'Add to vault' : 'Save changes',
-            icon: Icons.check,
+            icon: AppIcons.check,
             onPressed: busy ? null : submit,
           ),
           const SizedBox(height: Space.lg),

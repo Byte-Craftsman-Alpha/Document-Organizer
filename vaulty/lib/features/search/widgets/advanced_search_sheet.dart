@@ -251,7 +251,7 @@ class _RangeButton extends StatelessWidget {
     children: [
       AppButton(
         label: label,
-        icon: Icons.date_range,
+        icon: AppIcons.calendar,
         secondary: true,
         onPressed: onTap,
       ),

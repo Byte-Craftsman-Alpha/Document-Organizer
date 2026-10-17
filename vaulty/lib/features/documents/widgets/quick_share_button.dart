@@ -48,12 +48,12 @@ class QuickShareButton extends ConsumerWidget {
     return full
         ? AppButton(
             label: busy ? 'Preparing file…' : 'Share',
-            icon: Icons.ios_share,
+            icon: AppIcons.share,
             onPressed: busy ? null : () => quickShare(context, ref, id),
           )
         : AppIconButton(
             label: busy ? 'Preparing file' : 'Share document',
-            icon: busy ? Icons.hourglass_top : Icons.ios_share,
+            icon: busy ? AppIcons.refresh : AppIcons.share,
             onPressed: busy ? null : () => quickShare(context, ref, id),
           );
   }

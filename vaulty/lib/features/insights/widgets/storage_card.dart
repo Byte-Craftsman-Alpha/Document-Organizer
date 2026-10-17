@@ -13,7 +13,7 @@ class StorageCard extends StatelessWidget {
       children: [
         const SectionHeader(
           'Your Drive, at a glance',
-          action: Icon(Icons.cloud_outlined),
+          action: Icon(AppIcons.cloud),
         ),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.end,

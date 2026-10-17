@@ -43,7 +43,7 @@ class LiveLoginControls extends ConsumerWidget {
             label: connection.id == null
                 ? 'Continue with Google'
                 : 'Connect Google Drive',
-            icon: Icons.login,
+            icon: AppIcons.login,
             onPressed: () => ref.read(sessionProvider.notifier).signIn(),
           ),
         if (!kIsWeb && repo is OfflineAuthRepository) ...[
@@ -51,7 +51,7 @@ class LiveLoginControls extends ConsumerWidget {
           AppButton(
             label: 'Open offline vault',
             secondary: true,
-            icon: Icons.offline_pin_outlined,
+            icon: AppIcons.check,
             onPressed: session.isLoading
                 ? null
                 : () async {

@@ -49,7 +49,7 @@ class WelcomeBanner extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.shield_outlined,
+                              AppIcons.shield,
                               size: 14,
                               color: context.colors.onPrimaryContainer,
                             ),

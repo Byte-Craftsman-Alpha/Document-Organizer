@@ -65,10 +65,10 @@ class _SourceSheetState extends ConsumerState<SourceSheet> {
               child: Row(
                 children: [
                   Icon(switch (source) {
-                    FileSource.files => Icons.folder_open,
-                    FileSource.gallery => Icons.photo_outlined,
-                    FileSource.camera => Icons.camera_alt_outlined,
-                    FileSource.scan => Icons.document_scanner_outlined,
+                    FileSource.files => AppIcons.folderOpen,
+                    FileSource.gallery => AppIcons.image,
+                    FileSource.camera => AppIcons.camera,
+                    FileSource.scan => AppIcons.scanner,
                   }),
                   const SizedBox(width: Space.md),
                   Expanded(
@@ -79,7 +79,7 @@ class _SourceSheetState extends ConsumerState<SourceSheet> {
                       FileSource.scan => 'Scan',
                     }, style: context.type.titleMedium),
                   ),
-                  const Icon(Icons.arrow_forward),
+                  const Icon(AppIcons.forward),
                 ],
               ),
             ),

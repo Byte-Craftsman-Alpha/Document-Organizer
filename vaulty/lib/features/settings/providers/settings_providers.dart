@@ -27,8 +27,7 @@ class SettingsController extends AsyncNotifier<VaultPreferences> {
   Future<void> save(VaultPreferences value) async {
     final owner = ref.read(vaultIdentityProvider);
     final old = state;
-    final securityChange = old.valueOrNull?.biometric != value.biometric;
-    if (!securityChange) state = AsyncData(value);
+    state = AsyncData(value);
     try {
       await ref.read(authRepositoryProvider).savePreferences(value);
       if (ref.read(vaultIdentityProvider) == owner) state = AsyncData(value);

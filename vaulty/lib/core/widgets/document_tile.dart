@@ -25,8 +25,8 @@ class DocumentThumbnail extends StatelessWidget {
           children: [
             Icon(
               document.kind.isImage
-                  ? Icons.image_outlined
-                  : Icons.description_outlined,
+                  ? AppIcons.image
+                  : AppIcons.document,
               size: large ? Metrics.logo : Metrics.icon,
               color: context.colors.primary,
             ),
@@ -99,6 +99,15 @@ class DocumentTile extends StatelessWidget {
   Widget build(BuildContext context) => AppPress(
     child: Card(
       clipBehavior: Clip.antiAlias,
+      color: selected
+          ? context.colors.primaryContainer.withValues(alpha: 0.15)
+          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: Corners.card,
+        side: selected
+            ? BorderSide(color: context.colors.primary, width: 1.5)
+            : BorderSide.none,
+      ),
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
@@ -108,10 +117,17 @@ class DocumentTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (selected)
-                const SizedBox(
+                Container(
                   width: Metrics.thumbnail,
                   height: Metrics.thumbnail,
-                  child: Icon(Icons.check_circle_outline),
+                  decoration: BoxDecoration(
+                    color: context.colors.primaryContainer,
+                    borderRadius: Corners.card,
+                  ),
+                  child: Icon(
+                    AppIcons.check,
+                    color: context.colors.primary,
+                  ),
                 )
               else
                 DocumentThumbnail(document: document, hero: hero),
@@ -119,12 +135,33 @@ class DocumentTile extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    HighlightedText(document.title, query: query),
+                    HighlightedText(
+                      document.title,
+                      query: query,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.type.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: Space.xxs),
-                    AppText(
-                      '${document.belongsTo} · ${bytesLabel(document.sizeBytes)}',
-                      style: context.mutedCaption,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            document.belongsTo,
+                            style: context.mutedCaption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          ' · ${bytesLabel(document.sizeBytes)}',
+                          style: context.mutedCaption,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: Space.xs),
                     ExpiryPill(document: document),
@@ -141,14 +178,32 @@ class DocumentTile extends StatelessWidget {
 }
 
 class HighlightedText extends StatelessWidget {
-  const HighlightedText(this.text, {super.key, required this.query});
+  const HighlightedText(
+    this.text, {
+    super.key,
+    required this.query,
+    this.maxLines = 2,
+    this.overflow = TextOverflow.ellipsis,
+    this.style,
+  });
   final String text, query;
+  final int? maxLines;
+  final TextOverflow overflow;
+  final TextStyle? style;
   @override
   Widget build(BuildContext context) {
+    final effectiveStyle = style ?? context.type.bodyLarge;
     final index = query.isEmpty
         ? -1
         : text.toLowerCase().indexOf(query.toLowerCase());
-    if (index < 0) return Text(text, style: context.type.bodyLarge);
+    if (index < 0) {
+      return Text(
+        text,
+        style: effectiveStyle,
+        maxLines: maxLines,
+        overflow: overflow,
+      );
+    }
     return Text.rich(
       TextSpan(
         children: [
@@ -160,6 +215,9 @@ class HighlightedText extends StatelessWidget {
           TextSpan(text: text.substring(index + query.length)),
         ],
       ),
+      style: effectiveStyle,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 }

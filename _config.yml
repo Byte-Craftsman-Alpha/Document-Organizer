@@ -20,3 +20,4 @@ exclude:
   - ".config"
   - "*.apk"
   - "*.zip"
+

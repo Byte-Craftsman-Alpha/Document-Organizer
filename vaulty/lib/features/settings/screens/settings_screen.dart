@@ -148,20 +148,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   value: prefs.biometric,
                   onChanged: (v) async {
-                    final repository = ref.read(documentRepositoryProvider);
-                    if (repository is LiveDocumentRepository) {
-                      try {
-                        await repository.lockChallenge();
-                      } catch (e) {
-                        if (context.mounted) {
-                          notice(
-                            context,
-                            e is VaultFailure
-                                ? e.message
-                                : 'Device authentication unavailable.',
-                          );
+                    if (v) {
+                      final repository = ref.read(documentRepositoryProvider);
+                      if (repository is LiveDocumentRepository) {
+                        try {
+                          await repository.lockChallenge();
+                        } catch (e) {
+                          if (context.mounted) {
+                            notice(
+                              context,
+                              e is VaultFailure
+                                  ? e.message
+                                  : 'Device authentication unavailable.',
+                            );
+                          }
+                          return;
                         }
-                        return;
                       }
                     }
                     await save(prefs.copyWith(biometric: v));
@@ -292,14 +294,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             AppListTile(
-              leading: const Icon(Icons.delete_outline),
+              leading: const Icon(AppIcons.trash),
               title: const AppText('Trash'),
               subtitle: const AppText('Restore recently deleted documents'),
-              trailing: const Icon(Icons.chevron_right),
+              trailing: const Icon(AppIcons.chevronRight),
               onTap: () => context.push('/trash'),
             ),
             AppListTile(
-              leading: const Icon(Icons.download_outlined),
+              leading: const Icon(AppIcons.download),
               title: const AppText('Export backup'),
               subtitle: AppText(
                 ref.watch(liveModeProvider)
@@ -311,7 +313,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (busy) const SkeletonBox(height: Metrics.touch),
             if (kDebugMode)
               AppListTile(
-                leading: const Icon(Icons.palette_outlined),
+                leading: const Icon(AppIcons.palette),
                 title: const AppText('Design gallery'),
                 subtitle: const AppText('Debug · tokens & components'),
                 onTap: () => context.push('/gallery'),

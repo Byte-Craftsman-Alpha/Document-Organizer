@@ -6,9 +6,11 @@ import '../theme/app_extensions.dart';
 import '../l10n/app_strings.dart';
 import '../../domain/repositories/live_capabilities.dart';
 import '../theme/app_tokens.dart';
+import '../theme/app_icons.dart';
 
 export '../theme/app_extensions.dart';
 export '../theme/app_tokens.dart';
+export '../theme/app_icons.dart';
 export 'notice_center.dart';
 export '../l10n/app_strings.dart';
 
@@ -250,7 +252,7 @@ class EmptyState extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    this.icon = Icons.inbox_outlined,
+    this.icon = AppIcons.inbox,
     this.action,
   });
   final String title, message;
@@ -368,7 +370,7 @@ class AsyncPanel<T> extends StatelessWidget {
       message: error is VaultFailure
           ? error.message
           : 'Your vault is safe. Try again when you’re ready.',
-      icon: Icons.cloud_off_outlined,
+      icon: AppIcons.cloudOff,
       action: AppButton(
         label: 'Try again',
         secondary: true,
@@ -837,7 +839,7 @@ class UploadActionIcon extends StatelessWidget {
       borderRadius: Corners.pill,
     ),
     child: Icon(
-      Icons.add,
+      AppIcons.add,
       color: context.colors.primary,
       semanticLabel: 'Add document',
     ),

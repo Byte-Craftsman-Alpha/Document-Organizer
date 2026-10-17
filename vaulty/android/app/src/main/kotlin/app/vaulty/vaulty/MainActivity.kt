@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import io.flutter.embedding.android.FlutterFragmentActivity
@@ -34,7 +35,8 @@ class MainActivity : FlutterFragmentActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val root get() = File(filesDir, "incoming-encrypted").apply { mkdirs() }
     private val maximum = 50L * 1024 * 1024
-    private val batchMaximum = 150L * 1024 * 1024
+    private val batchMaximum = 500L * 1024 * 1024
+    private var pendingChangedNotification = false
     private fun key(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         val alias = "vaulty-incoming-v1"
@@ -121,7 +123,7 @@ class MainActivity : FlutterFragmentActivity() {
                                     }
                                 } finally { temp.delete() }
                             }
-                            "pending" -> rows.map { row -> mapOf("id" to row.getString("id"),"name" to row.getString("name"),"size" to row.optLong("size"),"mime" to row.optString("mime"),"error" to row.optString("error")) }
+                            "pending" -> rows.map { row -> mapOf("id" to row.getString("id"),"name" to row.getString("name"),"size" to row.optLong("size"),"mime" to row.optString("mime"),"error" to row.optString("error"),"kind" to row.optString("kind")) }
                             "read" -> {
                                 val row = rows.firstOrNull { it.getString("id")==id } ?: error("This import expired. Share it into Vaulty again.")
                                 check(row.optString("error").isEmpty()) { row.optString("error") }
@@ -138,6 +140,10 @@ class MainActivity : FlutterFragmentActivity() {
                 }
             }
         }
+        if (pendingChangedNotification) {
+            pendingChangedNotification = false
+            runOnUiThread { channel?.invokeMethod("changed", null) }
+        }
     }
     override fun onCreate(state: Bundle?) { super.onCreate(state); receiveRenewal(intent); receive(intent) }
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); receiveRenewal(intent); receive(intent) }
@@ -146,57 +152,214 @@ class MainActivity : FlutterFragmentActivity() {
             openRenewals=true;intent.removeExtra("vaulty_open_home");renewalChannel?.invokeMethod("openHome",null)
         }
     }
+    private fun addParsedUri(raw: String?, list: MutableList<Uri>) {
+        if (raw.isNullOrBlank()) return
+        if (raw.contains(",file:") || raw.contains(",content:") || raw.contains("\n") || raw.contains(",")) {
+            raw.split(Regex("[,\\n]+")).forEach { addParsedUri(it.trim(), list) }
+            return
+        }
+        try {
+            val parsed = Uri.parse(raw.trim())
+            if (parsed != null && (parsed.scheme == "file" || parsed.scheme == "content")) {
+                list.add(parsed)
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun addUri(uri: Uri?, list: MutableList<Uri>) {
+        if (uri == null) return
+        val str = uri.toString()
+        if (str.contains(",file:") || str.contains(",content:") || str.contains(",")) {
+            addParsedUri(str, list)
+        } else {
+            list.add(uri)
+        }
+    }
+
+    private fun extractUris(intent: Intent): List<Uri> {
+        val result = mutableListOf<Uri>()
+        intent.clipData?.let { clip ->
+            for (i in 0 until clip.itemCount) {
+                val item = clip.getItemAt(i)
+                item.uri?.let { addUri(it, result) }
+                if (item.uri == null && item.text != null) {
+                    addParsedUri(item.text.toString(), result)
+                }
+            }
+        }
+        intent.data?.let { addUri(it, result) }
+        val extras = intent.extras
+        if (extras != null) {
+            val stream = extras.get(Intent.EXTRA_STREAM)
+            when (stream) {
+                is Uri -> addUri(stream, result)
+                is Collection<*> -> {
+                    for (item in stream) {
+                        when (item) {
+                            is Uri -> addUri(item, result)
+                            is String -> addParsedUri(item, result)
+                            is Parcelable -> if (item is Uri) addUri(item, result)
+                        }
+                    }
+                }
+                is Array<*> -> {
+                    for (item in stream) {
+                        when (item) {
+                            is Uri -> addUri(item, result)
+                            is String -> addParsedUri(item, result)
+                            is Parcelable -> if (item is Uri) addUri(item, result)
+                        }
+                    }
+                }
+                is String -> addParsedUri(stream, result)
+                is Parcelable -> if (stream is Uri) addUri(stream, result)
+            }
+        }
+        return result.distinct()
+    }
+
+    private fun detectKind(bytes: ByteArray, len: Int): String? {
+        if (len >= 5 && bytes[0] == '%'.code.toByte() && bytes[1] == 'P'.code.toByte() && bytes[2] == 'D'.code.toByte() && bytes[3] == 'F'.code.toByte() && bytes[4] == '-'.code.toByte()) return "pdf"
+        if (len >= 3 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte()) return "jpg"
+        if (len >= 8 && bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte() && bytes[4] == 0x0D.toByte() && bytes[5] == 0x0A.toByte() && bytes[6] == 0x1A.toByte() && bytes[7] == 0x0A.toByte()) return "png"
+        if (len >= 12 && bytes[0] == 'R'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte() && bytes[3] == 'F'.code.toByte() && bytes[8] == 'W'.code.toByte() && bytes[9] == 'E'.code.toByte() && bytes[10] == 'B'.code.toByte() && bytes[11] == 'P'.code.toByte()) return "webp"
+        if (len >= 6 && (String(bytes, 0, 6, Charsets.US_ASCII) == "GIF87a" || String(bytes, 0, 6, Charsets.US_ASCII) == "GIF89a")) return "gif"
+        if (len >= 12 && String(bytes, 4, 4, Charsets.US_ASCII) == "ftyp") {
+            val brand = String(bytes, 8, 4, Charsets.US_ASCII)
+            if (brand in listOf("heic", "heix", "hevc", "hevx", "mif1", "msf1")) return "heic"
+        }
+        if (len >= 4 && bytes[0] == 0x50.toByte() && bytes[1] == 0x4B.toByte() && bytes[2] == 0x03.toByte() && bytes[3] == 0x04.toByte()) return "docx"
+        return null
+    }
+
+    private fun kindFromExtension(name: String): String? {
+        val ext = name.substringAfterLast('.', "").lowercase()
+        return when (ext) {
+            "pdf" -> "pdf"
+            "jpg", "jpeg" -> "jpg"
+            "png" -> "png"
+            "webp" -> "webp"
+            "gif" -> "gif"
+            "heic", "heif" -> "heic"
+            "docx" -> "docx"
+            else -> null
+        }
+    }
+
     @Suppress("DEPRECATION")
     private fun receive(shared: Intent?) {
         if (shared == null || (shared.action != Intent.ACTION_SEND && shared.action != Intent.ACTION_SEND_MULTIPLE)) return
-        val uris = mutableListOf<Uri>()
-        try {
-            if (shared.action == Intent.ACTION_SEND_MULTIPLE) uris.addAll(shared.getParcelableArrayListExtra<Parcelable>(Intent.EXTRA_STREAM)?.filterIsInstance<Uri>() ?: emptyList())
-            else (shared.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let { uris.add(it) }
-            shared.clipData?.let { data -> for (i in 0 until data.itemCount) data.getItemAt(i).uri?.let { uris.add(it) } }
-        } catch (_: Exception) { uris.clear() }
+        val uris = try {
+            extractUris(shared)
+        } catch (_: Exception) {
+            emptyList()
+        }
         shared.action = null // Do not duplicate this intent on activity recreation.
         worker.execute {
             val rows = load()
             val incoming = uris.distinct()
-            if (incoming.isEmpty()) rows.add(JSONObject().put("id",UUID.randomUUID().toString()).put("name","No document attached").put("created",System.currentTimeMillis()).put("error","Share a file attachment, not just text or a link."))
+            if (incoming.isEmpty()) rows.add(JSONObject().put("id", UUID.randomUUID().toString()).put("name", "No document attached").put("created", System.currentTimeMillis()).put("error", "Share a file attachment, not just text or a link."))
             var total = rows.sumOf { it.optLong("size") }
             val available = (20 - rows.size).coerceAtLeast(0)
             for (uri in incoming.take(available)) {
                 val id = UUID.randomUUID().toString()
-                val row = JSONObject().put("id",id).put("name","Shared document").put("created",System.currentTimeMillis())
-                val file = File(root,"$id.bin")
+                val row = JSONObject().put("id", id).put("name", "Shared document").put("created", System.currentTimeMillis())
+                val file = File(root, "$id.bin")
                 try {
-                    check(rows.size < 20) { "Review or remove pending files first (20 file limit)." }
-                    check(uri.scheme=="content") { "This app did not provide a readable content attachment. Save it to Files and share again." }
-                    row.put("mime",contentResolver.getType(uri) ?: shared.type ?: "application/octet-stream")
-                    contentResolver.query(uri,arrayOf(OpenableColumns.DISPLAY_NAME,OpenableColumns.SIZE),null,null,null)?.use { cursor ->
-                        if(cursor.moveToFirst()) {
-                            val name = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                            if(name>=0 && !cursor.isNull(name)) row.put("name",cursor.getString(name).take(240))
-                            val size = cursor.getColumnIndex(OpenableColumns.SIZE)
-                            if(size>=0 && !cursor.isNull(size)) check(cursor.getLong(size) <= maximum) { "Choose a file up to 50 MB." }
+                    check(uri.scheme == "content" || uri.scheme == "file") { "This app did not provide a readable content attachment. Save it to Files and share again." }
+                    var name: String? = null
+                    var size: Long = -1L
+                    var mime: String? = null
+
+                    if (uri.scheme == "file") {
+                        val f = File(uri.path ?: "")
+                        if (f.exists()) {
+                            name = f.name
+                            size = f.length()
+                        }
+                    } else {
+                        try {
+                            contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+                                if (cursor.moveToFirst()) {
+                                    val nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                                    if (nameIdx >= 0 && !cursor.isNull(nameIdx)) name = cursor.getString(nameIdx).take(240)
+                                    val sizeIdx = cursor.getColumnIndex(OpenableColumns.SIZE)
+                                    if (sizeIdx >= 0 && !cursor.isNull(sizeIdx)) size = cursor.getLong(sizeIdx)
+                                }
+                            }
+                        } catch (_: Exception) {}
+                    }
+                    val finalName = if (name.isNullOrBlank()) {
+                        uri.lastPathSegment?.take(240)?.ifBlank { null } ?: "Shared document"
+                    } else {
+                        name!!
+                    }
+                    row.put("name", finalName)
+                    if (size > maximum) {
+                        error("Choose a file up to 50 MB.")
+                    }
+
+                    try {
+                        mime = contentResolver.getType(uri)
+                    } catch (_: Exception) {}
+                    if (mime.isNullOrBlank() || mime == "*/*") {
+                        val ext = finalName.substringAfterLast('.', "")
+                        if (ext.isNotEmpty()) {
+                            mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.lowercase())
                         }
                     }
+                    row.put("mime", mime ?: shared.type ?: "application/octet-stream")
+
+                    val input = if (uri.scheme == "file") {
+                        val f = File(uri.path ?: "")
+                        if (f.exists()) f.inputStream() else contentResolver.openInputStream(uri)
+                    } else {
+                        contentResolver.openInputStream(uri)
+                    } ?: error("The sending app did not allow access to this file.")
+
                     var count = 0L
-                    contentResolver.openInputStream(uri)?.use { input ->
+                    var detectedKind: String? = null
+                    input.use { stream ->
                         encrypt(file) { output ->
-                            val buffer = ByteArray(64*1024)
-                            while(true) {
-                                val read = input.read(buffer); if(read<0) break
-                                count+=read
-                                check(count <= maximum && total+count <= batchMaximum) { "Limit: 50 MB per file and 150 MB per pending batch." }
-                                output.write(buffer,0,read)
+                            val buffer = ByteArray(64 * 1024)
+                            while (true) {
+                                val read = stream.read(buffer)
+                                if (read < 0) break
+                                if (count == 0L) {
+                                    detectedKind = detectKind(buffer, read)
+                                }
+                                count += read
+                                check(count <= maximum && total + count <= batchMaximum) { "Limit: 50 MB per file and 500 MB per pending batch." }
+                                output.write(buffer, 0, read)
                             }
                         }
-                    } ?: error("The sending app did not allow access to this file.")
-                    check(count>0) { "Empty file." }
-                    row.put("size",count); total+=count
-                } catch (e:Exception) { file.delete(); row.put("size",0).put("error",e.message ?: "Could not read attachment.") }
+                    }
+                    check(count > 0) { "Empty file." }
+                    row.put("size", count)
+                    total += count
+                    if (detectedKind == null) {
+                        detectedKind = kindFromExtension(finalName)
+                    }
+                    if (detectedKind != null) {
+                        row.put("kind", detectedKind)
+                    }
+                } catch (e: Exception) {
+                    file.delete()
+                    row.put("size", 0).put("error", e.message ?: "Could not read attachment.")
+                }
                 rows.add(row)
             }
-            if(incoming.size>available && rows.none { it.optString("name")=="Additional files not imported" }) rows.add(JSONObject().put("id",UUID.randomUUID().toString()).put("name","Additional files not imported").put("created",System.currentTimeMillis()).put("error","At most 20 pending files are allowed. Finish or discard this batch, then share the remaining originals again."))
-            try { save(rows); runOnUiThread { channel?.invokeMethod("changed",null) } } catch (_:Exception) { /* No upload occurs unless persisted intake can be reviewed. */ }
+            if (incoming.size > available && rows.none { it.optString("name") == "Additional files not imported" }) {
+                rows.add(JSONObject().put("id", UUID.randomUUID().toString()).put("name", "Additional files not imported").put("created", System.currentTimeMillis()).put("error", "At most 20 pending files are allowed. Finish or discard this batch, then share the remaining originals again."))
+            }
+            try {
+                save(rows)
+                if (channel != null) {
+                    runOnUiThread { channel?.invokeMethod("changed", null) }
+                } else {
+                    pendingChangedNotification = true
+                }
+            } catch (_: Exception) {}
         }
     }
 }

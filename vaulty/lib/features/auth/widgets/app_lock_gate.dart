@@ -144,7 +144,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_outline, size: Metrics.logo),
+                  const Icon(AppIcons.lock, size: Metrics.logo),
                   const SizedBox(height: Space.lg),
                   AppText(
                     'Your vault is locked',

@@ -19,12 +19,12 @@ class _DesignGalleryState extends State<DesignGallery> {
     actions: [
       AppIconButton(
         label: 'Light theme',
-        icon: Icons.light_mode_outlined,
+        icon: AppIcons.lightMode,
         onPressed: () => widget.onTheme(ThemeMode.light),
       ),
       AppIconButton(
         label: 'Dark theme',
-        icon: Icons.dark_mode_outlined,
+        icon: AppIcons.darkMode,
         onPressed: () => widget.onTheme(ThemeMode.dark),
       ),
     ],
@@ -63,7 +63,7 @@ class _DesignGalleryState extends State<DesignGallery> {
         spacing: Space.xs,
         runSpacing: Space.xs,
         children: [
-          AppButton(label: 'Add document', icon: Icons.add, onPressed: () {}),
+          AppButton(label: 'Add document', icon: AppIcons.add, onPressed: () {}),
           AppButton(label: 'Secondary', secondary: true, onPressed: () {}),
           AppButton(label: 'Destructive', danger: true, onPressed: () {}),
         ],
@@ -71,7 +71,7 @@ class _DesignGalleryState extends State<DesignGallery> {
       const AppTextField(
         label: 'Document title',
         hint: 'e.g. Vehicle insurance',
-        icon: Icons.description_outlined,
+        icon: AppIcons.document,
       ),
       AppCard(
         child: Column(

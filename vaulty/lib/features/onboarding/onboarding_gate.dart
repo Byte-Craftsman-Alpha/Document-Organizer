@@ -126,7 +126,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Expanded(
                       child: AppButton(
                         label: step == 2 ? 'Get started' : 'Next',
-                        icon: Icons.arrow_forward,
+                        icon: AppIcons.forward,
                         onPressed: busy
                             ? null
                             : step == 2

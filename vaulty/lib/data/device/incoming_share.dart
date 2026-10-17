@@ -9,9 +9,11 @@ class IncomingFile {
     required this.name,
     required this.size,
     required this.mime,
+    this.kind,
     this.error,
   });
   final String id, name, mime;
+  final String? kind;
   final int size;
   final String? error;
 }
@@ -39,6 +41,9 @@ class IncomingShare {
             name: row['name'] as String,
             size: (row['size'] as num).toInt(),
             mime: row['mime'] as String,
+            kind: (row['kind'] as String?)?.isEmpty == true
+                ? null
+                : row['kind'] as String?,
             error: (row['error'] as String).isEmpty
                 ? null
                 : row['error'] as String,

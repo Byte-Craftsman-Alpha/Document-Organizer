@@ -108,7 +108,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         actions: [
           AppIconButton(
             label: 'Advanced filters',
-            icon: Icons.tune,
+            icon: AppIcons.settings,
             onPressed: advanced,
           ),
         ],
@@ -124,7 +124,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   AppTextField(
                     label: 'Title, person or tag',
                     controller: text,
-                    icon: Icons.search,
+                    icon: AppIcons.search,
                     autofocus: false,
                     onChanged: change,
                     onSubmitted: search,
@@ -155,7 +155,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     'Saved searches',
                     action: AppIconButton(
                       label: 'Save current search',
-                      icon: Icons.bookmark_add_outlined,
+                      icon: AppIcons.copy,
                       onPressed: save,
                     ),
                   ),
@@ -240,7 +240,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       child: EmptyState(
                         title: 'No matches, yet',
                         message: 'Try a different name or remove a filter.',
-                        icon: Icons.search_off,
+                        icon: AppIcons.searchOff,
                       ),
                     ),
                   )

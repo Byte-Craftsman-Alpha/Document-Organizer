@@ -31,17 +31,11 @@ class AppearancePanel extends ConsumerWidget {
             const DropdownMenuItem(value: 'en', child: AppText('English')),
             const DropdownMenuItem(value: 'hi', child: AppText('हिन्दी')),
           ],
-          onChanged: (value) async {
+          onChanged: (value) {
             if (value == null) return;
-            try {
-              await ref
-                  .read(uiPreferencesProvider.notifier)
-                  .save(language: value);
-            } catch (_) {
-              if (context.mounted) {
-                notice(context, 'Couldn’t save that preference. Please retry.');
-              }
-            }
+            ref
+                .read(uiPreferencesProvider.notifier)
+                .save(language: value);
           },
         ),
         const SizedBox(height: Space.md),
@@ -57,24 +51,16 @@ class AppearancePanel extends ConsumerWidget {
                   ThemeMode.dark => 'Dark',
                 },
                 selected: ref.watch(themeModeProvider) == mode,
-                onTap: () async {
-                  try {
-                    await ref
-                        .read(uiPreferencesProvider.notifier)
-                        .save(theme: mode.name);
-                    final current = ref.read(settingsProvider).valueOrNull;
-                    if (current != null) {
-                      await ref
-                          .read(settingsProvider.notifier)
-                          .save(current.copyWith(theme: mode.name));
-                    }
-                  } catch (_) {
-                    if (context.mounted) {
-                      notice(
-                        context,
-                        'Couldn’t save that preference. Please retry.',
-                      );
-                    }
+                onTap: () {
+                  ref
+                      .read(uiPreferencesProvider.notifier)
+                      .save(theme: mode.name);
+                  final current = ref.read(settingsProvider).valueOrNull;
+                  if (current != null) {
+                    ref
+                        .read(settingsProvider.notifier)
+                        .save(current.copyWith(theme: mode.name))
+                        .catchError((_) {});
                   }
                 },
               ),

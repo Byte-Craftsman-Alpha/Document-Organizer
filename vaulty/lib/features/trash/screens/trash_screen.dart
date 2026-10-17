@@ -34,7 +34,7 @@ class TrashScreen extends ConsumerWidget {
                   const EmptyState(
                     title: 'Nothing left behind',
                     message: 'Your Trash is empty.',
-                    icon: Icons.delete_outline,
+                    icon: AppIcons.trash,
                   ),
                 ]
               : docs

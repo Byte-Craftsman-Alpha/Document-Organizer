@@ -43,17 +43,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (ref.watch(liveModeProvider))
           AppIconButton(
             label: 'Pending imports',
-            icon: Icons.move_to_inbox_outlined,
+            icon: AppIcons.inbox,
             onPressed: () => context.push('/import'),
           ),
         AppIconButton(
           label: 'Search vault',
-          icon: Icons.search,
+          icon: AppIcons.search,
           onPressed: () => context.push('/search'),
         ),
         AppIconButton(
           label: 'Refresh vault',
-          icon: Icons.refresh,
+          icon: AppIcons.refresh,
           onPressed: () {
             ref.invalidate(documentsProvider);
             ref.invalidate(storageProvider);
@@ -99,7 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return const EmptyState(
                     title: 'All caught up',
                     message: 'No renewals need your attention.',
-                    icon: Icons.task_alt,
+                    icon: AppIcons.check,
                   );
                 }
                 return Column(
@@ -114,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onTap: () => context.push('/document/${d.id}'),
                           trailing: AppIconButton(
                             label: 'Renew ${d.title}',
-                            icon: Icons.edit_calendar_outlined,
+                            icon: AppIcons.calendar,
                             onPressed: () =>
                                 context.push('/document/${d.id}/edit'),
                           ),
