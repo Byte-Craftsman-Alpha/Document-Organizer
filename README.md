@@ -15,8 +15,19 @@
   <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.6.0-0175C2?logo=dart&logoColor=white" alt="Dart 3.6" /></a>
   <a href="https://developer.android.com"><img src="https://img.shields.io/badge/Android-API%2035-3DDC84?logo=android&logoColor=white" alt="Android API 35" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+  <a href="PRIVACY_POLICY.md"><img src="https://img.shields.io/badge/Privacy-Policy-blue.svg" alt="Privacy Policy" /></a>
+  <a href="TERMS_AND_CONDITIONS.md"><img src="https://img.shields.io/badge/Terms-Conditions-orange.svg" alt="Terms and Conditions" /></a>
   <a href="https://github.com/Byte-Craftsman-Alpha/Document-Organizer/actions"><img src="https://img.shields.io/badge/Build-Passing-brightgreen?logo=githubactions&logoColor=white" alt="CI/CD" /></a>
   <a href="https://teamparadox.in"><img src="https://img.shields.io/badge/Team-Paradox-6C5CE7" alt="Team Paradox" /></a>
+</p>
+
+<p align="center">
+  <a href="#highlights--features">Features</a> &bull;
+  <a href="#live-screenshots">Screenshots</a> &bull;
+  <a href="docs/APP_ARCHITECTURE.md">Architecture</a> &bull;
+  <a href="PRIVACY_POLICY.md">Privacy Policy</a> &bull;
+  <a href="TERMS_AND_CONDITIONS.md">Terms &amp; Conditions</a> &bull;
+  <a href="LICENSE">License</a>
 </p>
 
 ---
@@ -257,6 +268,16 @@ Every push and release tag triggers the automated `.github/workflows/build-apk.y
 ### Collaboration & Contributions
 **Team Paradox**
 - Website: [teamparadox.in](https://teamparadox.in)
+
+---
+
+## Legal & Privacy
+
+Vaulty is built with strict privacy and user data sovereignty principles. Review our legal policies:
+
+- 📜 **[Terms and Conditions](TERMS_AND_CONDITIONS.md)** &bull; [Web Version](https://byte-craftsman-alpha.github.io/Document-Organizer/TERMS_AND_CONDITIONS)
+- 🔒 **[Privacy Policy](PRIVACY_POLICY.md)** &bull; [Web Version](https://byte-craftsman-alpha.github.io/Document-Organizer/PRIVACY_POLICY)
+- 🛡️ **[Security Policy](SECURITY.md)**
 
 ---
 
